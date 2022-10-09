@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -9,7 +9,9 @@
     <Title></Title>
     <Authors>mclift</Authors>
     <Company />
-    <Description>A .NET Library for the Pimoroni Unicorn Hat HD</Description>
+    <Description>A .NET Library to drive the Pimoroni Unicorn HAT HD on the Raspberry Pi.</Description>
+    <RepositoryUrl>https://github.com/mclift/unicorn-hat-dotnet</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
