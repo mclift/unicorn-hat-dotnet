@@ -39,5 +39,5 @@ jobs:
         name: package
         path: package/*
     
-    #- name: NuGet push
-    #  run: dotnet nuget push ./package/*.nupkg -s nuget.org --api-key ${{ secrets.NUGET_API_KEY }}
+    - name: NuGet push
+      run: dotnet nuget push ./package/*.nupkg -s nuget.org --api-key ${{ secrets.NUGET_API_KEY }}
