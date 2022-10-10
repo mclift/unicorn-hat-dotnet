@@ -4,8 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>Mclift.$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace>Mclift.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <PackageId>Mclift.UnicornHatHdDotnet</PackageId>
+    <AssemblyName>Mclift.UnicornHatHdDotnet</AssemblyName>
+    <RootNamespace>Mclift.UnicornHatHdDotnet</RootNamespace>
     <Title></Title>
     <Authors>mclift</Authors>
     <Company />
