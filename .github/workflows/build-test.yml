@@ -1,0 +1,42 @@
+name: Build & test
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Get new version tag
+      if: ${{ github.ref == 'refs/heads/main' }}
+      id: version
+      uses: paulhatch/semantic-version@v4.0.2
+      with:
+        change_path: "src/UnicornHatHdDotnet"
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Tag version
+      if: ${{ github.ref == 'refs/heads/main' }}
+      run: |
+           git tag ${{ steps.version.outputs.version_tag }}
+           git push --tags
