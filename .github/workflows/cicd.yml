@@ -45,12 +45,10 @@ jobs:
       shell: pwsh
       run: |
            $version = "${{ github.event.release.tag_name }}".TrimStart('v')
-           echo ${{ github.event.release.tag_name }}
-           echo $version
-           $version >> $env:VERSION
+           "package_version=$version" >> $env:GITHUB_ENV
 
     - name: Log version
-      run: echo ${{ env.VERSION }}
+      run: echo ${{ env.package_version }}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
@@ -61,7 +59,7 @@ jobs:
       run: dotnet restore
 
     - name: Dotnet pack
-      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj -c Release -o package -p:PackageVersion=${{ env.VERSION }}
+      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj -c Release -o package -p:PackageVersion=${{ env.package_version }}
 
     #- name: NuGet push
     #  run: dotnet nuget push ./package/*.nupkg -s nuget.org --api-key ${{ secrets.NUGET_API_KEY }}
