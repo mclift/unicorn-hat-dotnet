@@ -41,6 +41,17 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Show version number
+      shell: pwsh
+      run: |
+           $version = "${{ github.event.release.tag_name }}".TrimStart('v')
+           echo ${{ github.event.release.tag_name }}
+           echo $version
+           $version >> $env:VERSION
+
+    - name: Log version
+      run: echo ${{ env.VERSION }}
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
@@ -49,17 +60,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Show version number
-      shell: pwsh
-      run: |
-           $version = "${{ github.event.release.tag_name }}".TrimStart('v')
-           echo $version | Out-File -FilePath $Env:VERSION -Encoding utf8 -Append
-
-    - name: Log version
-      run: echo $VERSION
-
     - name: Dotnet pack
-      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj -c Release -o package -p:PackageVersion=$VERSION
+      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj -c Release -o package -p:PackageVersion=${{ env.VERSION }}
 
     #- name: NuGet push
     #  run: dotnet nuget push ./package/*.nupkg -s nuget.org --api-key ${{ secrets.NUGET_API_KEY }}
