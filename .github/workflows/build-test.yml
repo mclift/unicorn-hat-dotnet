@@ -36,7 +36,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal
 
     - name: Tag version
-      if: ${{ github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' && steps.version.outputs.changed }}
       run: |
            git tag ${{ steps.version.outputs.version_tag }}
            git push --tags
