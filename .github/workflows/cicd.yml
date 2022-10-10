@@ -61,5 +61,10 @@ jobs:
     - name: Dotnet pack
       run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj -c Release -o package -p:PackageVersion=${{ env.package_version }}
 
+    - uses: actions/upload-artifact@v3
+      with:
+        name: package
+        path: package/*
+    
     #- name: NuGet push
     #  run: dotnet nuget push ./package/*.nupkg -s nuget.org --api-key ${{ secrets.NUGET_API_KEY }}
