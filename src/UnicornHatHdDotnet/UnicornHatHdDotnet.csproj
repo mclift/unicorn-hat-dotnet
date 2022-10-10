@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\README.md" pack="true" Link="README.md" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Iot.Device.Bindings" Version="2.1.0" />
   </ItemGroup>
 
