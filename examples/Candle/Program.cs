@@ -1,34 +1,9 @@
 ﻿using Mclift.UnicornHatHdDotnet;
 using Color = System.Drawing.Color;
 
+// Ported from https://github.com/pimoroni/unicorn-hat-hd/tree/master/examples
 Console.WriteLine("Press a key to exit...");
-var unicornhathd = new UnicornHat() { Brightness = 0.6 };
-
-static Color ColorFromHsv(double hue, double saturation, double value)
-{
-    // See: https://stackoverflow.com/questions/1335426
-    var hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
-    var f = (hue / 60) - Math.Floor(hue / 60);
-
-    value = value * 255;
-    var v = Convert.ToInt32(value);
-    var p = Convert.ToInt32(value * (1 - saturation));
-    var q = Convert.ToInt32(value * (1 - f * saturation));
-    var t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
-
-    if (hi == 0)
-        return Color.FromArgb(255, v, t, p);
-    else if (hi == 1)
-        return Color.FromArgb(255, q, v, p);
-    else if (hi == 2)
-        return Color.FromArgb(255, p, v, t);
-    else if (hi == 3)
-        return Color.FromArgb(255, p, q, v);
-    else if (hi == 4)
-        return Color.FromArgb(255, t, p, v);
-    else
-        return Color.FromArgb(255, v, p, q);
-}
+var unicornHat = new UnicornHat() { Brightness = 0.6 };
 
 var candle = Enumerable.Range(0, 256).Select(_ => 0.0).ToArray();
 var palette = Enumerable.Range(0, 256).Select(i =>
@@ -45,7 +20,7 @@ var palette = Enumerable.Range(0, 256).Select(i =>
 
         v = Math.Max(0.0, Math.Min(1.0, v));
 
-        return ColorFromHsv(h, s, v);
+        return ColorHelper.ColorFromHsv(h, s, v);
     }).ToArray();
 
 static void SetPixel(double[] b, int x, int y, double v)
@@ -126,11 +101,11 @@ while (!Console.KeyAvailable)
             var i = 2;
             var o = (i * 3) + 1;
             var colorIndex = (int)Math.Min(255, Math.Max(0, GetPixel(candle, x, y)));
-            unicornhathd.Set(x, y, palette[colorIndex]);
+            unicornHat.Set(x, y, palette[colorIndex]);
         }
     }
 
-    unicornhathd.Show();
+    unicornHat.Show();
 }
 
-unicornhathd.Off();
+unicornHat.Off();

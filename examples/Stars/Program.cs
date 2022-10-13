@@ -1,7 +1,8 @@
 using Mclift.UnicornHatHdDotnet;
 
+// Ported from https://github.com/pimoroni/unicorn-hat-hd/tree/master/examples
 Console.WriteLine("Press a key to exit...");
-var unicornhathd = new UnicornHat() { Brightness = 0.6 };
+var unicornHat = new UnicornHat() { Brightness = 0.6 };
 
 var random = new Random();
 double[] CreateStar()
@@ -22,7 +23,7 @@ try
 
     while (!Console.KeyAvailable)
     {
-        unicornhathd.Clear();
+        unicornHat.Clear();
 
         for (int i = 0; i < starCount; i++)
         {
@@ -39,7 +40,7 @@ try
             var brightness = (byte)Math.Min(255, star[2]);
             try
             {
-                unicornhathd.Set((int)star[0], (int)star[1], brightness, brightness, brightness);
+                unicornHat.Set((int)star[0], (int)star[1], brightness, brightness, brightness);
             }
             catch(Exception)
             {
@@ -48,12 +49,12 @@ try
             }
         }
 
-        unicornhathd.Show();
+        unicornHat.Show();
     }
 }
 finally
 {
-    unicornhathd.Off();
+    unicornHat.Off();
 }
 
 

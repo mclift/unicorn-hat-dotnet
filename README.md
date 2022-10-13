@@ -6,7 +6,7 @@ A .NET library to drive the Pimoroni [Unicorn HAT HD](http://shop.pimoroni.com/p
 
 * A Raspberry Pi with the .NET 6 runtime installed on Linux.
 * The Unicorn HAT HD connected to the Raspberry Pi.
-* SPI enabled – see [Manual install](https://github.com/pimoroni/unicorn-hat-hd#manual-install) notes in the pimoroni/unicorn-hat-hd repository.
+* SPI enabled &ndash; see [Manual install](https://github.com/pimoroni/unicorn-hat-hd#manual-install) notes in the pimoroni/unicorn-hat-hd repository.
 
 ## Usage
 
@@ -32,7 +32,7 @@ Console.ReadLine();
 hat.Off();
 ```
 
-Run the sample with the command, replacing /path/to/dotnet with the actual path to your .NET binary – you can find this by typing `which dotnet`:
+Run the sample with the following command, replacing /path/to/dotnet with the actual path to your .NET binary &ndash; you can find this by typing `which dotnet`:
 ```
 sudo -E /path/to/dotnet run
 ```
