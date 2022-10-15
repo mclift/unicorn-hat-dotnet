@@ -1,5 +1,4 @@
 ﻿using Mclift.UnicornHatHdDotnet;
-using Color = System.Drawing.Color;
 
 // Ported from https://github.com/pimoroni/unicorn-hat-hd/tree/master/examples
 Console.WriteLine("Press a key to exit...");
