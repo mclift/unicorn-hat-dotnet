@@ -1,43 +1,92 @@
+# Publishes to nuget.org using Trusted Publishing (OIDC): no long-lived API key is stored.
+# Triggered by publishing a GitHub release for a version tag (e.g. v0.1.0).
+#
+# The nuget.org Trusted Publishing policy must match:
+#   Repository Owner: mclift
+#   Repository:       unicorn-hat-dotnet
+#   Workflow File:    release.yml
+#   Environment:      nuget
+# Repository secret NUGET_USER must hold the nuget.org profile name (not the email address).
 name: Release
 
 on:
   release:
-    types: [ created ]
+    types: [ published ]
+
+permissions:
+  contents: read
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'created'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
-    - name: Show version number
-      shell: pwsh
+    - name: Determine package version
+      id: version
+      env:
+        TAG_NAME: ${{ github.event.release.tag_name }}
       run: |
-           $version = "${{ github.event.release.tag_name }}".TrimStart('v')
-           "package_version=$version" >> $env:GITHUB_ENV
-
-    - name: Log version
-      run: echo ${{ env.package_version }}
+           VERSION="${TAG_NAME#v}"
+           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+             echo "::error::Release tag '$TAG_NAME' is not a SemVer version (expected vX.Y.Z[-suffix])."
+             exit 1
+           fi
+           echo "Package version: $VERSION"
+           echo "package_version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: |
+          8.0.x
+          10.0.x
+          11.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore UnicornHatHdDotnet.sln
+
+    - name: Build
+      run: dotnet build UnicornHatHdDotnet.sln --configuration Release --no-restore -p:Version=${{ steps.version.outputs.package_version }}
 
     - name: Test
-      run: dotnet test --verbosity normal
+      run: dotnet test --solution UnicornHatHdDotnet.sln --configuration Release --no-build
 
     - name: Dotnet pack
-      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj -c Release -o package -p:PackageVersion=${{ env.package_version }}
+      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj --configuration Release --no-build --output package -p:Version=${{ steps.version.outputs.package_version }}
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v7
       with:
         name: package
         path: package/*
-    
+        if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      id-token: write # required to request the GitHub OIDC token for NuGet Trusted Publishing
+
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: package
+        path: package
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 11.0.x
+
+    - name: NuGet login (OIDC → short-lived API key)
+      id: login
+      uses: NuGet/login@v1
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
     - name: NuGet push
-      run: dotnet nuget push ./package/*.nupkg -s nuget.org --api-key ${{ secrets.NUGET_API_KEY }}
+      run: dotnet nuget push "package/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
