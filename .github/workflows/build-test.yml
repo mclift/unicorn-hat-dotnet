@@ -5,38 +5,51 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # pushes the version tag on main
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
     - name: Get new version tag
       if: ${{ github.ref == 'refs/heads/main' }}
       id: version
-      uses: paulhatch/semantic-version@v4.0.2
+      uses: paulhatch/semantic-version@v6
       with:
         change_path: "src/UnicornHatHdDotnet"
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: |
+          8.0.x
+          10.0.x
+          11.0.x
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore UnicornHatHdDotnet.sln
 
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build UnicornHatHdDotnet.sln --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --solution UnicornHatHdDotnet.sln --configuration Release --no-build
+
+    - name: Pack (validation only)
+      run: dotnet pack src/UnicornHatHdDotnet/UnicornHatHdDotnet.csproj --configuration Release --no-build --output package
 
     - name: Tag version
-      if: ${{ github.ref == 'refs/heads/main' && steps.version.outputs.changed }}
+      if: ${{ github.ref == 'refs/heads/main' && steps.version.outputs.changed == 'true' }}
+      env:
+        VERSION_TAG: ${{ steps.version.outputs.version_tag }}
       run: |
-           git tag ${{ steps.version.outputs.version_tag }}
-           git push --tags
+           git tag "$VERSION_TAG"
+           git push origin "$VERSION_TAG"

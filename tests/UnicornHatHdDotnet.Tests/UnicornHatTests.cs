@@ -20,7 +20,7 @@ namespace Mclift.UnicornHatHdDotnet.Tests
             Assert.Equal((byte)0xFF, txBuffer[1]);
             Assert.Equal((byte)0xFF, txBuffer[2]);
             Assert.Equal((byte)0xFF, txBuffer[3]);
-            Assert.All(txBuffer.Skip(4), b => Assert.Equal(b, (byte)0x00));
+            Assert.All(txBuffer.Skip(4), b => Assert.Equal((byte)0x00, b));
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Mclift.UnicornHatHdDotnet.Tests
             Assert.Equal((byte)0xFF, txBuffer[1]);
             Assert.Equal((byte)0xFF, txBuffer[2]);
             Assert.Equal((byte)0xFF, txBuffer[3]);
-            Assert.All(txBuffer.Skip(4), b => Assert.Equal(b, (byte)0x00));
+            Assert.All(txBuffer.Skip(4), b => Assert.Equal((byte)0x00, b));
         }
 
         [Fact]
@@ -50,7 +50,49 @@ namespace Mclift.UnicornHatHdDotnet.Tests
             Assert.Equal((byte)0x7F, txBuffer[1]);
             Assert.Equal((byte)0x7F, txBuffer[2]);
             Assert.Equal((byte)0x7F, txBuffer[3]);
-            Assert.All(txBuffer.Skip(4), b => Assert.Equal(b, (byte)0x00));
+            Assert.All(txBuffer.Skip(4), b => Assert.Equal((byte)0x00, b));
+        }
+
+        [Fact]
+        public void Off_ClearsAndSendsBlankFrame()
+        {
+            var txBuffer = new byte[769];
+            var spiProvider = CreateMockSpiProvider((tx, _) => txBuffer = (byte[])tx.Clone());
+            var unicornHat = new UnicornHat(spiProvider) { Brightness = 1.0 };
+            unicornHat.SetAll(Color.White);
+            unicornHat.Off();
+            Assert.Equal((byte)0x72, txBuffer[0]);
+            Assert.All(txBuffer.Skip(1), b => Assert.Equal((byte)0x00, b));
+        }
+
+        [Fact]
+        public void Show_WithAddressing_SendsOneFramePerEnabledDisplay()
+        {
+            var startBytes = new List<byte>();
+            var spiProvider = CreateMockSpiProvider((tx, _) => startBytes.Add(tx[0]));
+            var unicornHat = new UnicornHat(spiProvider);
+            unicornHat.SetAddressingEnabled(true);
+            unicornHat.SetDisplayEnabled(0, true);
+            unicornHat.SetDisplayEnabled(2, true);
+            unicornHat.Show();
+            Assert.Equal(new byte[] { 0x73, 0x75 }, startBytes);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(8)]
+        public void SetDisplayEnabled_WithOutOfRangeIndex_Throws(int index)
+        {
+            var unicornHat = new UnicornHat(CreateMockSpiProvider());
+            Assert.Throws<ArgumentOutOfRangeException>(() => unicornHat.SetDisplayEnabled(index, true));
+        }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeCallerProvidedSpiProvider()
+        {
+            var spiProvider = new Mock<ISpiProvider>();
+            new UnicornHat(spiProvider.Object).Dispose();
+            spiProvider.Verify(m => m.Dispose(), Times.Never);
         }
 
         private static ISpiProvider CreateMockSpiProvider(Action<byte[], byte[]>? callback = null)

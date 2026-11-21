@@ -1,13 +1,17 @@
 ﻿using Mclift.UnicornHatHdDotnet;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using StbImageSharp;
 
 Console.WriteLine("Press a key to exit...");
 
 // Image source: https://opengameart.org/content/16x16-chibi-rpg-character-builder-v2
 // See README.md for licence information.
 
-using var spriteSheet = Image.Load<Rgb24>("example-characters.png");
+ImageResult spriteSheet;
+using (var stream = File.OpenRead("example-characters.png"))
+{
+    spriteSheet = ImageResult.FromStream(stream, ColorComponents.RedGreenBlue);
+}
+
 using var unicornHat = new UnicornHat() { Brightness = 0.6 };
 
 int[] frameSequence = { 0, 1, 2, 1 };
@@ -23,8 +27,9 @@ void DrawFrame(int xOffset, int yOffset)
     {
         for (int y = 0; y < 16; y++)
         {
-            var color = spriteSheet[xOffset + x, yOffset + y];
-            unicornHat.Set(x, y, color.R, color.G, color.B);
+            // Pixel data is packed RGB, row by row.
+            var i = ((yOffset + y) * spriteSheet.Width + xOffset + x) * 3;
+            unicornHat.Set(x, y, spriteSheet.Data[i], spriteSheet.Data[i + 1], spriteSheet.Data[i + 2]);
         }
     }
 }
